@@ -17,7 +17,7 @@ export const DEFAULT_DATA = {
     phone: '+91 63825 51412',                 // shown as an icon in the footer ('' to hide)
     linkedin: 'https://www.linkedin.com/in/karthick250700/',
     github: 'https://github.com/KARTHICK250700',
-    instagram: 'https://instagram.com/',      // DUMMY: replace with your Instagram (or '' to hide)
+    instagram: '',                            // add your Instagram URL to show the icon
     resume: '/resume.pdf'                      // ATS resume (Nov 2026)
   },
   // Real facts only — add measured numbers (invoices/month, accuracy %) when available.
@@ -56,16 +56,6 @@ export const DEFAULT_DATA = {
       approach: 'Documents are chunked and embedded into ChromaDB; a retriever pulls the most relevant passages and the LLM answers only from them.',
       architecture: ['Docs', 'Chunk + embed', 'ChromaDB', 'Retriever', 'LLM answer'],
       result: 'Staff get answers grounded in company documents instead of searching manually.'
-    },
-    {
-      slug: 'langgraph-agent', title: 'LangGraph Agent', todo: true,
-      text: 'Multi-step agent with tool calling that automates a business workflow.',
-      metric: 'Multi-step, tool-using agent', tags: ['LangGraph', 'Agents', 'Tool Calling'],
-      image: '', github: '', live: '',
-      problem: 'TODO: describe the real business workflow this agent automates.',
-      approach: 'A LangGraph agent plans the steps, calls tools (APIs / database) and moves the workflow forward, with a human check where needed.',
-      architecture: ['Trigger', 'Planner node', 'Tool calls', 'Human check', 'Done'],
-      result: 'TODO: add the real outcome.'
     }
   ],
   // Real quotes only (manager, client, colleague). Section stays hidden while empty.
