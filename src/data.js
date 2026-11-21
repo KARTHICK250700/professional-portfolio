@@ -7,68 +7,68 @@
    ========================================================================== */
 export const DEFAULT_DATA = {
   profile: {
-    name: 'Karthick', fullName: 'Karthick M', role: 'Python & AI Developer',
-    headline: 'I build AI that does the boring work.',
-    intro: 'AI systems, automation workflows and full-stack web apps that turn manual business work into automated pipelines.',
-    about: "I'm an AI developer at Avaniko Technologies, Chennai. I came from an M.Com background and taught myself Python, web development and machine learning — so I understand the business problem and the code that solves it.",
+    name: 'Karthick', fullName: 'Karthick M', role: 'AI Engineer | Python & LLM Developer',
+    headline: 'I build AI that reads invoices so people don\'t have to.',
+    intro: 'Self-hosted LLMs, OCR and RAG pipelines that take documents from email straight into SAP Business One — no manual data entry.',
+    about: "I'm an AI Engineer at Avaniko Technologies, Chennai, with 1+ year of hands-on experience building production document AI. I built an end-to-end invoice automation system: it reads invoices directly from email, extracts data with PaddleOCR and a self-hosted, quantized Qwen 3.6 35B LLM, converts it to structured JSON and stores it in SAP Business One and the database automatically. I come from an M.Com background, so I understand the accounting process and the code that automates it.",
     location: 'Chennai, India',
     available: true,                           // shows the green "Open to opportunities" badge
-    email: 'karthick.dev@example.com',        // DUMMY: replace with real email
+    email: 'karthickweb6@gmail.com',
+    phone: '+91 63825 51412',                 // shown as an icon in the footer ('' to hide)
     linkedin: 'https://www.linkedin.com/in/karthick250700/',
-    github: 'https://github.com/',             // DUMMY: replace with your GitHub
-    resume: '/resume.pdf'                      // generated from LinkedIn — add phone/email in the source file
+    github: 'https://github.com/KARTHICK250700',
+    instagram: 'https://instagram.com/',      // DUMMY: replace with your Instagram (or '' to hide)
+    resume: '/resume.pdf'                      // ATS resume (Nov 2026)
   },
-  // DUMMY numbers — replace with true ones before going live.
+  // Real facts only — add measured numbers (invoices/month, accuracy %) when available.
   stats: [
-    { value: '6+', label: 'AI pipelines in production' },
-    { value: '20K', label: 'Documents processed / month' },
-    { value: '1,200h', label: 'Manual work saved / year' }
+    { value: '1+ yr', label: 'Building production AI' },
+    { value: '35B', label: 'Self-hosted Qwen LLM' },
+    { value: 'Email → SAP', label: 'Invoices posted with zero manual entry' }
   ],
   services: [
-    { title: 'AI Systems', text: 'RAG over company docs, OCR pipelines, LLM deployment and LangGraph agents.' },
-    { title: 'Automation', text: 'Connect AI to real business processes — invoices, reports, approvals, no manual steps.' },
-    { title: 'Full-Stack Web', text: 'React frontends and Node / Python APIs that put your AI in front of real users.' },
-    { title: 'Deployment', text: 'From prototype to production — reliable, monitored, ready to scale.' }
+    { title: 'Document AI', text: 'Invoice and document extraction with PaddleOCR + LLM into clean, structured JSON.' },
+    { title: 'LLM & RAG', text: 'Self-hosted, quantized LLMs (Qwen 3.6 35B), RAG with ChromaDB, and LangGraph agents with tool calling.' },
+    { title: 'ERP Automation', text: 'Email-to-ERP pipelines that post invoices straight into SAP Business One and the database.' },
+    { title: 'Deployment', text: 'LLM inference APIs with FastAPI and Docker — from prototype to production.' }
   ],
-  skills: ['Prompt Engineering', 'Machine Learning', 'AI Agents', 'RAG', 'LangGraph', 'OCR', 'LLMs', 'React.js', 'Web Development'],
-  pipeline: [['Documents', 'PDF / scans'], ['OCR', 'extract text'], ['LLM + RAG', 'understand'], ['AI Agent', 'decide & act'], ['Automated', 'work done']],
+  skills: ['Python', 'LLMs', 'Qwen 3.6 35B', 'RAG', 'ChromaDB', 'LangGraph', 'AI Agents', 'PaddleOCR', 'OCR', 'FastAPI', 'Docker', 'REST APIs', 'SAP Business One', 'Prompt Engineering', 'Email Automation', 'React.js'],
+  pipeline: [['Email', 'invoice arrives'], ['PaddleOCR', 'extract text'], ['Qwen LLM', 'fields to JSON'], ['Validate', 'structured data'], ['SAP B1 + DB', 'stored automatically']],
   /* Projects: one card each + a full case study (opens at #case/<slug>).
      image: put screenshots in public/projects/ and reference './projects/x.png' */
   projects: [
     {
-      slug: 'invoice-ai', title: 'Invoice AI Pipeline', todo: true,
-      text: 'PDF invoices to structured JSON for ERP integration using OCR + LLM.',
-      metric: '4 hrs → 10 min per batch', tags: ['OCR', 'LLM', 'Python'],
+      slug: 'invoice-ai', title: 'Invoice AI: Email to SAP Business One',
+      text: 'Reads invoices from email, extracts them with OCR + a self-hosted LLM, and posts structured JSON into SAP Business One.',
+      metric: 'Zero manual data entry', tags: ['PaddleOCR', 'Qwen LLM', 'FastAPI', 'Docker', 'SAP B1'],
       image: '', github: '', live: '',
-      problem: 'The accounts team typed 300+ supplier invoices a day into the ERP by hand. Each batch took about 4 hours and typos caused payment mismatches every week.',
-      approach: 'OCR extracts the text, an LLM maps it to ERP fields with a strict JSON schema, and rule checks (totals, tax, vendor match) flag anything uncertain for a 1-click human review.',
-      architecture: ['PDF upload', 'OCR', 'LLM field extraction', 'Validation rules', 'ERP JSON'],
-      result: 'Batch time dropped from 4 hours to 10 minutes, field accuracy reached 96%, and the team now only reviews flagged invoices.'
+      problem: 'Supplier invoices arrived by email as PDFs and had to be typed into SAP Business One by hand — slow, repetitive and error-prone.',
+      approach: 'The pipeline reads the mailbox, picks up invoice attachments, extracts text with PaddleOCR, and a self-hosted, quantized Qwen 3.6 35B LLM converts it to structured JSON (header, line items, tax, totals). The LLM runs as a FastAPI service in Docker.',
+      architecture: ['Email inbox', 'Invoice PDF', 'PaddleOCR', 'Qwen 3.6 35B → JSON', 'SAP Business One + DB'],
+      result: 'Invoices go from email to SAP Business One and the database automatically, with no manual data entry.'
     },
     {
-      slug: 'knowledge-rag', title: 'Company Knowledge RAG', todo: true,
-      text: 'Chat assistant that answers from internal docs with source citations.',
-      metric: 'Answers 80% of internal questions', tags: ['RAG', 'LangChain', 'Vector DB'],
+      slug: 'knowledge-rag', title: 'Company Knowledge RAG',
+      text: 'Assistant that answers questions from company documents, grounded in retrieved content.',
+      metric: 'Grounded answers from company docs', tags: ['RAG', 'ChromaDB', 'LLM', 'Python'],
       image: '', github: '', live: '',
-      problem: 'Staff spent hours searching SOPs, manuals and old emails for answers, and the same questions reached senior people again and again.',
-      approach: 'Documents are chunked and embedded into a vector DB; a retriever pulls the top passages and the LLM answers only from them, always with clickable sources.',
-      architecture: ['Docs', 'Chunk + embed', 'Vector DB', 'Retriever', 'LLM answer + sources'],
-      result: 'Around 80% of routine questions are answered instantly with sources; average lookup time went from 15 minutes to under 30 seconds.'
+      problem: 'Answers were buried across company documents, so staff spent time searching or asking senior colleagues.',
+      approach: 'Documents are chunked and embedded into ChromaDB; a retriever pulls the most relevant passages and the LLM answers only from them.',
+      architecture: ['Docs', 'Chunk + embed', 'ChromaDB', 'Retriever', 'LLM answer'],
+      result: 'Staff get answers grounded in company documents instead of searching manually.'
     },
     {
       slug: 'langgraph-agent', title: 'LangGraph Agent', todo: true,
-      text: 'Multi-step, tool-using agent that automates a business workflow end to end.',
-      metric: '3-day process → same day', tags: ['LangGraph', 'Agents', 'APIs'],
+      text: 'Multi-step agent with tool calling that automates a business workflow.',
+      metric: 'Multi-step, tool-using agent', tags: ['LangGraph', 'Agents', 'Tool Calling'],
       image: '', github: '', live: '',
-      problem: 'Purchase requests moved between email, spreadsheets and the ERP, so a simple approval took about 3 days of follow-ups.',
-      approach: 'A LangGraph agent reads the request, checks budget and stock through tool calls, drafts the PO and pauses for a human approval step before posting.',
-      architecture: ['Trigger', 'Planner node', 'Tool calls', 'Human approval', 'Done'],
-      result: 'Most requests now close the same day, with a full audit trail of every step the agent took.'
+      problem: 'TODO: describe the real business workflow this agent automates.',
+      approach: 'A LangGraph agent plans the steps, calls tools (APIs / database) and moves the workflow forward, with a human check where needed.',
+      architecture: ['Trigger', 'Planner node', 'Tool calls', 'Human check', 'Done'],
+      result: 'TODO: add the real outcome.'
     }
   ],
   // Real quotes only (manager, client, colleague). Section stays hidden while empty.
-  testimonials: [ // DUMMY quotes — replace with real ones (or empty the list to hide the section)
-    { quote: 'Karthick turned a messy manual process into a pipeline the whole team trusts. He understands the business side, not just the code.', name: 'Team Lead', role: 'Avaniko Technologies', todo: true },
-    { quote: 'Fast, careful and always explains the trade-offs. Our invoice backlog disappeared within weeks.', name: 'Finance Manager', role: 'Client', todo: true }
-  ]
+  testimonials: [] // add real quotes only (manager, client, colleague) — section stays hidden while empty
+
 }
