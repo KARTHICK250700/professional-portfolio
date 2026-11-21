@@ -3,19 +3,13 @@ import { MotionConfig } from 'motion/react'
 import { DEFAULT_DATA } from './data.js'
 import { useStoredData } from './useStorage.js'
 import { useScrollEngine } from './useScrollEngine.js'
-import { Nav, Hero, About, Marquee, Services, Skills, Pipeline, Projects, Testimonials, Contact, CaseStudy } from './components/Sections.jsx'
+import { Nav, Hero, About, Marquee, Services, Skills, Pipeline, Projects, Testimonials, Contact, CaseStudy, Footer } from './components/Sections.jsx'
 import Admin from './components/Admin.jsx'
 import Chat from './components/Chat.jsx'
 const Scene3D = lazy(() => import('./Scene3D.jsx')) // 3D loads after the text is on screen
 
 const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches
 const hasWebGL = () => { try { return !!document.createElement('canvas').getContext('webgl2') } catch { return false } }
-
-function DevBanner({ data }) {
-  if (!import.meta.env.DEV) return null
-  const n = JSON.stringify(data).match(/DUMMY|"todo":true|example\.com/g)?.length || 0
-  return n ? <div className="devbar">DEV: {n} dummy items in src/data.js — replace before deploying (only visible in npm run dev)</div> : null
-}
 
 /* Magnetic buttons (desktop pointers only) */
 function useMagnetic() {
@@ -46,7 +40,6 @@ export default function App() {
   }, [])
   const p = data.profile
   return <MotionConfig reducedMotion="user">
-    <DevBanner data={data} />
     <div id="bar" aria-hidden="true" /><div id="floor" aria-hidden="true" /><div className="grain" aria-hidden="true" />
     <Nav p={p} active={pose} />
     {!reduced && <Suspense fallback={null}><Scene3D poseRef={poseRef} /></Suspense>}
@@ -55,7 +48,7 @@ export default function App() {
       <Services items={data.services} /><Skills skills={data.skills} /><Pipeline steps={data.pipeline} />
       <Projects items={data.projects} /><Testimonials items={data.testimonials} /><Contact p={p} />
     </main>
-    <footer>© {new Date().getFullYear()} {p.fullName} · Built with React, Three.js & Motion</footer>
+    <Footer p={p} />
     <CaseStudy items={data.projects} />
     <Chat data={data} />
     {admin && <Admin data={data} setData={setData} reset={reset} close={() => { setAdmin(false); history.replaceState(null, '', ' ') }} />}

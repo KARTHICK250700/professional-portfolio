@@ -51,14 +51,15 @@ const gear = (g, s) => {
 function loadImg(src) { return new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = src }) }
 
 /* Where each shape sits: [x, y, scale] desktop / mobile. Text sits on the opposite side. */
-const VIEW = { hero: [2.7, -.1, 1], about: [-2.7, 0, 1], services: [3.3, 0, .85], skills: [0, 0, .9], pipe: [0, -.8, 1], work: [0, .5, 1], contact: [3.6, 0, 1], voices: [-4.6, 0, .7] }
+const VIEW = { hero: [2.7, -.1, 1], about: [-2.7, 0, 1], services: [3.3, 0, .85], skills: [0, 0, .9], pipe: [0, -.8, 1], work: [0, .5, 1], contact: [3.5, 0, 1], voices: [-4.6, 0, .7] }
 const VIEW_M = { hero: [0, 1.75, .62], about: [0, 0, .62], services: [0, 0, .6], skills: [0, 0, .55], pipe: [0, -1.2, .6], work: [0, .5, .6], contact: [0, -1.6, .6], voices: [0, 2, .5] }
-const Z = .25 // first/last 25% of a section: particles stream in from the right / out to the left
+const DUR = 1.4 // seconds for one morph
 
-/* All motion runs on the GPU: one vertex shader morphs every particle, the CPU only sets uniforms. */
+/* Trigger-based morph: when a section enters the viewport the particles travel (with a swirl)
+   from wherever they are now to the new shape. All per-frame motion runs in the vertex shader. */
 const vert = `
-attribute vec3 aShape; attribute vec3 aCol; attribute vec3 aFaceCol; attribute float aDelay; attribute float aSw; attribute vec2 aSy;
-uniform float uT, uPhase, uEdge, uTime, uSpin, uWave, uSize, uFace, uPix; uniform vec3 uView;
+attribute vec3 aShape; attribute vec3 aPrev; attribute vec3 aCol; attribute vec3 aFaceCol; attribute float aDelay; attribute float aSw; attribute vec2 aSy;
+uniform float uT, uTime, uSpin, uWave, uSize, uFace, uPix; uniform vec3 uView;
 varying vec3 vCol;
 float ease(float t){ return t < .5 ? 4.*t*t*t : 1. - pow(-2.*t + 2., 3.) / 2.; }
 void main(){
@@ -66,12 +67,10 @@ void main(){
   p = vec3(p.x*c + p.z*s, p.y, -p.x*s + p.z*c);
   p.y += uWave * sin(p.x*.8 + uTime) * .15;
   p = vec3(p.x*uView.z + uView.x, p.y*uView.z + uView.y, p.z*uView.z);
-  if (uPhase != 0.) {
-    float e = ease(clamp((uT - aDelay) / .4, 0., 1.));
-    float m = uPhase < 0. ? e : 1. - e;
-    vec3 f = vec3((uPhase < 0. ? uEdge + 2. : -uEdge - 2.) + aSw, aSy.x, aSy.y);
-    p = mix(f, p, m); p.y += sin(m * 3.14159) * aSw * .9;
-  } else { p.xy += sin(uTime*1.2 + aDelay*100.) * .006; }
+  float e = ease(clamp((uT - aDelay * .5) / .6, 0., 1.));
+  float arc = sin(e * 3.14159);
+  p = mix(aPrev, p, e) + vec3(arc * aSw * .35, arc * aSw * .8, arc * aSy.y * .6);
+  p.xy += sin(uTime*1.2 + aDelay*100.) * .006;
   vCol = mix(aCol, aFaceCol, uFace);
   vec4 mv = modelViewMatrix * vec4(p, 1.);
   gl_Position = projectionMatrix * mv;
@@ -81,56 +80,75 @@ const frag = `
 varying vec3 vCol;
 void main(){ float d = length(gl_PointCoord - .5); float a = smoothstep(.5, .0, d); a *= a; gl_FragColor = vec4(vCol * a, a); }`
 
+const easeJ = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+const spinFor = (key, T) => key === 'skills' ? T * .5 : key === 'work' || key === 'pipe' ? 0 : Math.sin(T * .35) * (key === 'hero' ? .05 : .12)
+
 function Cloud({ poseRef }) {
-  const S = useMemo(shapes, []), pts = useRef(), mouse = useRef([0, 0]), intro = useRef(0), face = useRef(0), cur = useRef('')
-  const { geo, mat } = useMemo(() => {
-    const g = new THREE.BufferGeometry(), col = new Float32Array(N * 3), d = new Float32Array(N), sw = new Float32Array(N), sy = new Float32Array(N * 2)
+  const S = useMemo(shapes, []), pts = useRef(), mouse = useRef([0, 0]), face = useRef(0)
+  const st = useRef({ key: null, t: 1, view: [2.7, -.1, 1] })
+  const { geo, mat, R } = useMemo(() => {
+    const g = new THREE.BufferGeometry(), col = new Float32Array(N * 3), d = new Float32Array(N), sw = new Float32Array(N), sy = new Float32Array(N * 2), prev = new Float32Array(N * 3)
     const o = new THREE.Color('#ff6a00'), w = new THREE.Color('#ffffff')
-    for (let i = 0; i < N; i++) { const c = Math.random() < .72 ? o : w; col.set([c.r, c.g, c.b], i * 3); d[i] = Math.random() * .6; sw[i] = rnd(1.6); sy[i * 2] = rnd(3.5); sy[i * 2 + 1] = rnd(2.5) }
+    for (let i = 0; i < N; i++) {
+      const c = Math.random() < .72 ? o : w; col.set([c.r, c.g, c.b], i * 3)
+      d[i] = Math.random() * .6; sw[i] = rnd(1.6); sy[i * 2] = rnd(3.5); sy[i * 2 + 1] = rnd(2.5)
+      prev.set([12 + Math.random() * 4, sy[i * 2], sy[i * 2 + 1]], i * 3) // intro: stream in from the right
+    }
     g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(N * 3), 3))
-    g.setAttribute('aShape', new THREE.BufferAttribute(S.hero, 3))
+    g.setAttribute('aShape', new THREE.BufferAttribute(S.hero, 3)); g.setAttribute('aPrev', new THREE.BufferAttribute(prev, 3))
     g.setAttribute('aCol', new THREE.BufferAttribute(col, 3)); g.setAttribute('aFaceCol', new THREE.BufferAttribute(col.slice(), 3))
     g.setAttribute('aDelay', new THREE.BufferAttribute(d, 1)); g.setAttribute('aSw', new THREE.BufferAttribute(sw, 1)); g.setAttribute('aSy', new THREE.BufferAttribute(sy, 2))
-    const u = { uT: { value: 0 }, uPhase: { value: -1 }, uEdge: { value: 8 }, uTime: { value: 0 }, uSpin: { value: 0 }, uWave: { value: 0 }, uSize: { value: .085 }, uFace: { value: 0 }, uPix: { value: 400 }, uView: { value: new THREE.Vector3(2.7, -.1, 1) } }
+    const u = { uT: { value: 0 }, uTime: { value: 0 }, uSpin: { value: 0 }, uWave: { value: 0 }, uSize: { value: .085 }, uFace: { value: 0 }, uPix: { value: 400 }, uView: { value: new THREE.Vector3(2.7, -.1, 1) } }
     const m = new THREE.ShaderMaterial({ vertexShader: vert, fragmentShader: frag, uniforms: u, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })
-    return { geo: g, mat: m }
+    return { geo: g, mat: m, R: { d, sw, sy } }
   }, [S])
-  const attrs = useRef({})
-  const setShape = key => { const a = attrs.current[key] || (S[key] && (attrs.current[key] = new THREE.BufferAttribute(S[key], 3))); if (a) { geo.setAttribute('aShape', a); cur.current = key } }
+
+  /* Where every particle is right now (same maths as the shader) — used as the start of the next morph */
+  const snapshot = T => {
+    const u = mat.uniforms, sh = geo.attributes.aShape.array, pv = geo.attributes.aPrev.array, out = new Float32Array(N * 3)
+    const c = Math.cos(u.uSpin.value), s = Math.sin(u.uSpin.value), v = u.uView.value, t = u.uT.value, wv = u.uWave.value
+    for (let i = 0, j = 0; i < N; i++, j += 3) {
+      let x = sh[j], y = sh[j + 1], z = sh[j + 2]; const rx = x * c + z * s; z = -x * s + z * c; x = rx
+      y += wv * Math.sin(x * .8 + T) * .15; x = x * v.z + v.x; y = y * v.z + v.y; z *= v.z
+      const e = easeJ(Math.min(1, Math.max(0, (t - R.d[i] * .5) / .6))), arc = Math.sin(e * Math.PI)
+      out[j] = pv[j] + (x - pv[j]) * e + arc * R.sw[i] * .35; out[j + 1] = pv[j + 1] + (y - pv[j + 1]) * e + arc * R.sw[i] * .8; out[j + 2] = pv[j + 2] + (z - pv[j + 2]) * e + arc * R.sy[i * 2 + 1] * .6
+    }
+    return out
+  }
+  const go = (key, T) => { // start a morph to `key` from the current positions
+    if (!S[key]) return
+    if (st.current.key !== null) geo.setAttribute('aPrev', new THREE.BufferAttribute(snapshot(T), 3))
+    geo.setAttribute('aShape', new THREE.BufferAttribute(S[key], 3))
+    st.current.key = key; mat.uniforms.uT.value = 0
+  }
 
   useEffect(() => {
-    // Meaningful art per section: face → </> (commerce to code) → gear (automation) → helix → stream → wave → HI!
+    // Meaningful art per section: face → </> (commerce to code) → gear (automation) → helix → stream → wave → quotes → THANKS!
     S.about = sample(text('</>', '900 120px Inter, Arial'), { w: 4.6, depth: .3, base: 1 })
     S.services = sample(gear, { w: 5, depth: .4, base: 1 })
     S.voices = sample(text('“”', '900 160px Georgia, serif'), { w: 4, depth: .3, base: 1 })
-    S.contact = sample(text('HI!', '900 120px Inter, Arial'), { w: 4.4, depth: .3, base: 1 })
-    attrs.current = {}
+    S.contact = sample(text('THANKS!', '900 36px Inter, Arial'), { w: 5.4, depth: .3, base: 1 }) // change the word here
     loadImg('./face.png').then(img => {
       if (!img) return
       S.hero = sample((g, s) => g.drawImage(img, 0, 0, s, s), { size: 240, w: 4.8, depth: .35, gamma: 2, base: .05 })
       const fc = new Float32Array(N * 3), o = new THREE.Color('#ff6a00'), w = new THREE.Color('#fff'), t = new THREE.Color()
       for (let i = 0; i < N; i++) { t.copy(o).lerp(w, Math.pow(S.hero.lum[i], 2.5)); fc.set([t.r, t.g, t.b], i * 3) }
       geo.setAttribute('aFaceCol', new THREE.BufferAttribute(fc, 3))
-      delete attrs.current.hero; if (cur.current === 'hero' || !cur.current) setShape('hero')
+      if (st.current.key === 'hero' || st.current.key === null) { geo.setAttribute('aShape', new THREE.BufferAttribute(S.hero, 3)); st.current.key = st.current.key ?? 'hero' }
     })
   }, [S, geo])
 
   useFrame(({ clock, viewport, pointer, gl }, dt) => {
-    const p = poseRef.current, key = p.key || 'hero', T = clock.elapsedTime, q = p.q ?? .3, u = mat.uniforms
-    intro.current = Math.min(1, intro.current + dt / 2.2)
-    if (cur.current !== key) setShape(key)
-    let phase = 0, t = 1
-    if (key === 'hero' && intro.current < 1 && q < .5) { phase = -1; t = intro.current }
-    else if (q < Z && key !== 'hero') { phase = -1; t = q / Z }
-    else if (q > 1 - Z && key !== 'contact') { phase = 1; t = (q - (1 - Z)) / Z }
-    const small = viewport.width < 8, v = (small ? VIEW_M : VIEW)[key]
-    u.uT.value = t; u.uPhase.value = phase; u.uEdge.value = viewport.width / 2 + 3; u.uTime.value = T
-    u.uSpin.value = key === 'skills' ? T * .5 + (p.y || 0) * .002 : key === 'work' || key === 'pipe' ? 0 : Math.sin(T * .35) * (key === 'hero' ? .05 : .12)
-    u.uWave.value = key === 'work' ? 1 : 0
-    u.uView.value.set(v[0], v[1], v[2]); u.uPix.value = gl.domElement.height / 2
-    face.current += ((key === 'hero' ? 1 : 0) - face.current) * Math.min(1, dt * 2.5); u.uFace.value = face.current
+    const key = poseRef.current.key || 'hero', T = clock.elapsedTime, u = mat.uniforms
+    if (st.current.key === null) st.current.key = 'hero'
+    else if (key !== st.current.key) go(key, T)
+    u.uT.value = Math.min(1, u.uT.value + dt / (st.current.key === 'hero' && u.uT.value < 1 && T < 3 ? 2.2 : DUR))
+    const k = st.current.key, v = (viewport.width < 8 ? VIEW_M : VIEW)[k] || VIEW.hero
+    u.uView.value.set(v[0], v[1], v[2]); u.uTime.value = T; u.uSpin.value = spinFor(k, T); u.uWave.value = k === 'work' ? 1 : 0
+    u.uPix.value = gl.domElement.height / 2
+    face.current += ((k === 'hero' ? 1 : 0) - face.current) * Math.min(1, dt * 2.5); u.uFace.value = face.current
     mouse.current[0] += (pointer.x - mouse.current[0]) * .05; mouse.current[1] += (pointer.y - mouse.current[1]) * .05
-    pts.current.rotation.y = mouse.current[0] * .12; pts.current.rotation.x = -mouse.current[1] * .08 + (key === 'work' ? .3 : 0)
+    pts.current.rotation.y = mouse.current[0] * .12; pts.current.rotation.x = -mouse.current[1] * .08 + (k === 'work' ? .3 : 0)
   })
   return <points ref={pts} geometry={geo} material={mat} frustumCulled={false} />
 }

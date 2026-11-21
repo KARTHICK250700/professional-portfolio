@@ -89,7 +89,7 @@ export function Contact({ p }) {
   const [f, setF] = useState({ name: '', msg: '' }), [copied, setCopied] = useState(false)
   const send = e => { e.preventDefault(); location.href = `mailto:${p.email}?subject=${encodeURIComponent('Portfolio enquiry from ' + f.name)}&body=${encodeURIComponent(f.msg)}` }
   const copy = () => navigator.clipboard?.writeText(p.email).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800) })
-  return <section id="contact" data-pose="contact"><div className="box" style={{ marginBottom: '20vh' }}>
+  return <section id="contact" data-pose="contact"><div className="box">
     <Rv className="tag">Contact</Rv><Rv as="h2" className="big">Let's <span>build</span> it.</Rv>
     <Rv as="p">Have a manual process that eats your team's time? Let's automate it.</Rv>
     <Rv as="form" className="cf" onSubmit={send}>
@@ -127,4 +127,26 @@ export function CaseStudy({ items }) {
       <div className="case-links"><Ext className="btn" href={p.live}>Live demo ↗</Ext><Ext className="btn ghost" href={p.github}>Code ↗</Ext></div>
     </motion.article>
   </motion.div>}</AnimatePresence>
+}
+
+/* ---------- Footer: contact on the left, © in the middle, socials on the right ---------- */
+const I = {
+  phone: <path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z" />,
+  mail: <path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5z" />,
+  linkedin: <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM8.3 18.3V10H5.7v8.3zM7 8.8a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm11.3 9.5v-4.6c0-2.4-.5-4.2-3.3-4.2a2.9 2.9 0 0 0-2.6 1.4V10h-2.5v8.3h2.6v-4.1c0-1.1.2-2.1 1.5-2.1s1.4 1.2 1.4 2.2v4z" />,
+  github: <path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.4 1.1 2.9.8.1-.6.4-1.1.6-1.3-2.2-.3-4.6-1.1-4.6-5a3.9 3.9 0 0 1 1-2.7 3.6 3.6 0 0 1 .1-2.7s.8-.3 2.8 1a9.6 9.6 0 0 1 5 0c1.9-1.3 2.8-1 2.8-1 .5 1.4.2 2.4.1 2.7a3.9 3.9 0 0 1 1 2.7c0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9V21c0 .3.2.6.7.5A10 10 0 0 0 12 2z" />,
+  instagram: <path d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8.2a3.2 3.2 0 1 1 0-6.4 3.2 3.2 0 0 1 0 6.4zM17.3 5.5a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4zM21 8.3c-.1-1.6-.4-3-1.6-4.2S16.8 2.6 15.2 2.5C13.6 2.4 10.4 2.4 8.8 2.5 7.2 2.6 5.8 2.9 4.6 4.1S3.1 6.7 3 8.3C2.9 9.9 2.9 13.1 3 14.7c.1 1.6.4 3 1.6 4.2s2.6 1.5 4.2 1.6c1.6.1 4.8.1 6.4 0 1.6-.1 3-.4 4.2-1.6s1.5-2.6 1.6-4.2c.1-1.6.1-4.8 0-6.4zm-2 8.4a3.3 3.3 0 0 1-1.8 1.8c-1.3.5-4.3.4-5.7.4s-4.4.1-5.7-.4a3.3 3.3 0 0 1-1.8-1.8c-.5-1.3-.4-4.3-.4-5.7s-.1-4.4.4-5.7a3.3 3.3 0 0 1 1.8-1.8c1.3-.5 4.3-.4 5.7-.4s4.4-.1 5.7.4a3.3 3.3 0 0 1 1.8 1.8c.5 1.3.4 4.3.4 5.7s.1 4.4-.4 5.7z" />
+}
+const Ico = ({ n }) => <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">{I[n]}</svg>
+
+export function Footer({ p }) {
+  const social = [['linkedin', p.linkedin, 'LinkedIn'], ['github', p.github, 'GitHub'], ['instagram', p.instagram, 'Instagram']].filter(x => x[1])
+  return <footer className="foot">
+    <div className="foot-l">
+      {p.phone && <a className="ico" href={'tel:' + p.phone.replace(/\s/g, '')} aria-label={'Call ' + p.phone} title={p.phone}><Ico n="phone" /></a>}
+      {p.email && <a className="ico" href={'mailto:' + p.email} aria-label={'Email ' + p.email} title={p.email}><Ico n="mail" /></a>}
+    </div>
+    <div className="foot-c">© {new Date().getFullYear()} {p.fullName}. All rights reserved.</div>
+    <div className="foot-r">{social.map(([n, href, label]) => <a key={n} className="ico" href={href} target="_blank" rel="noreferrer" aria-label={label} title={label}><Ico n={n} /></a>)}</div>
+  </footer>
 }
